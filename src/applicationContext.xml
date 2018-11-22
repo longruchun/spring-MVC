@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+				http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+				http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+				http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+     <context:annotation-config></context:annotation-config>
+     <context:component-scan base-package="com.eshop"></context:component-scan> 
+      
+      <mvc:annotation-driven />
+	
+	<!-- 将静态文件指定到某个特殊的文件夹中统一处理 -->
+	<mvc:resources location="/Public/" mapping="/Public/**" />
+      
+      <!--  要声明dao -->
+      <!-- 要声明biz  -->  
+      <!-- 由于我们项目ORM选用myBatis,其中的Dao接口我们交给spring管理， -->
+      <!-- 由于Dao接口我们交给spring管理，所以myBatis sessionFactory 也交由spring 管理 -->
+      <!-- 既然sessionFactory 交给spring管理了，sessionFactory 所引用的的datasource 也要交给spring 管理，-->
+      <!-- 具体表现就是：datasource在spring配置文件中也要配置 一个 -->
+      
+      <!-- 因为要由spring管理数据源，所以你要指明 properites文 件位置 -->
+	  <context:property-placeholder location="classpath:connection.properties" />
+      
+      <!-- 数据源，使用dbcp -->
+		<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+			destroy-method="close">
+			<property name="driverClassName" value="${driver}" />
+			<property name="url" value="${url}" />
+			<property name="username" value="${username}" />
+			<property name="password" value="${password}" />
+			<property name="maxActive" value="10" />
+			<property name="maxIdle" value="5" />
+		</bean>
+      
+      <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 加载mybatis的配置文件 -->
+		<property name="configLocation" value="classpath:mybatis.xml" />
+		<!-- 数据源 -->
+		<property name="dataSource" ref="dataSource" />
+		<!-- 自动扫描mappers.xml文件 -->
+		<property name="mapperLocations" value="classpath*:com/eshop/mapper/*.xml"></property>
+	  </bean>
+      
+     
+      <!-- DAO接口所在包名，Spring会自动查找其下的类 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.eshop.dao" />
+
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+	</bean>
+
+</beans>      
